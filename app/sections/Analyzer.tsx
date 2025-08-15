@@ -310,22 +310,26 @@ export default function Analyzer() {
                 <div className="rounded-xl overflow-hidden border border-indigo-100 shadow-sm mt-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imageState.imageDataUrl} alt="NFT style poster" className="w-full h-auto" />
-                  <div className="p-3 flex items-center gap-2">
-                    <SaveToGalleryButton imageDataUrl={imageState.imageDataUrl} username={(state?.username || username) || ''} />
-                    <Button
-                      type="button"
-                      onClick={() => shareImage(imageState.imageDataUrl!)}
-                      className="h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-                    >
-                      Share to Farcaster
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={() => downloadImage(imageState.imageDataUrl!, (state?.username || username) || '')}
-                      className="h-10 rounded-lg bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
-                    >
-                      Download
-                    </Button>
+                  <div className="p-3 space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                      <SaveToGalleryButton imageDataUrl={imageState.imageDataUrl} username={(state?.username || username) || ''} />
+                      <Button
+                        type="button"
+                        onClick={() => shareImage(imageState.imageDataUrl!)}
+                        className="h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 w-full sm:w-auto"
+                      >
+                        Share to Farcaster
+                      </Button>
+                    </div>
+                    <div>
+                      <Button
+                        type="button"
+                        onClick={() => downloadImage(imageState.imageDataUrl!, (state?.username || username) || '')}
+                        className="h-10 rounded-lg bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 w-full sm:w-auto"
+                      >
+                        Download
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : null}
