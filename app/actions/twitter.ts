@@ -118,23 +118,22 @@ async function generateImageWithGemini(params: {
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
-    const prompt = `You are a crypto-native designer generating an NFT-style SVG poster. Output a compact JSON with one key "svg" whose value is a single-line SVG string. No markdown, no explanations.
+    const prompt = `You are a top-tier crypto/NFT visual artist creating a premium, collectible, textless SVG artwork. Output a compact JSON with one key "svg" whose value is a single-line SVG string. No markdown, no explanations.
 
-Vibe (NFT/crypto poster):
-- Loud, kinetic, futuristic; meant to attract crypto users
-- Neon gradient palette (electric indigo, cyan, magenta, acid green) on a dark indigo/black backdrop
-- Holographic sheen using layered gradients, geometric shards, glitch lines, particle bursts
-- Personality-driven abstract motif matching "${params.personality}" (e.g., builder → circuitry shapes; educator → grid/lines; shitposter → graffiti strokes)
-- Use the emoji ${params.emoji} as a small accent glyph, not the main subject
+Creative direction (collector-grade, textless):
+- Style: high-fidelity, futuristic, premium digital collectible. Avoid flat/simple shapes; create depth and realism.
+- Materials: holographic foil, chrome, glass, neon plasma, iridescent film. Achieve believable lighting and reflections.
+- Depth & lighting: layered parallax planes, occlusion, rim lights, inner glows, soft bloom, subtle chromatic aberration.
+- Palette: rich but balanced; lean into electric indigo, cyan, magenta, acid green with tasteful dark backdrop. Avoid muddy tones.
+- Motion feel: kinetic shards/strands, particle fields, glitch scanlines, energy arcs. Add subtle film grain/noise for texture.
+- Central motif: abstract emblem inspired by personality "${params.personality}" (e.g., builder → circuitry grids & node graphs; educator → precise geometric lattices; shitposter → chaotic iridescent strokes). Do NOT include any literal text/letters.
+- Emoji "${params.emoji}" must NOT appear as text. If referenced, only influence shapes/colors as a hidden motif.
 
-Constraints:
-- Square canvas 1024x1024
-- Use only inline SVG (no external images). Avoid heavy filters; prefer gradients, masks, patterns, and simple blurs sparingly
-- Use generic fonts (system-ui, sans-serif)
-- Prominently show:
-  @${params.username}
-  ${params.personality} • Based Score: ${params.score}/1000
-- Composition should feel bold and collectible (poster-esque)
+Technical constraints:
+- Canvas: square 1024x1024
+- Output: pure inline SVG (no external images). Prefer layered gradients, masks, clipPaths, blend/filter effects (feGaussianBlur, feBlend, feColorMatrix) used sparingly and efficiently.
+- No <text> elements, no usernames, no numbers, no UI frames. Artwork must be fully textless.
+- Ensure a clear focal point, foreground/midground/background separation, and premium finishing.
 
 Return exactly:
 {"svg":"<svg ...>...</svg>"}`

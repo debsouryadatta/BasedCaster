@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useMemo, useState, useRef } from 'react'
 import { useFormState, useFormStatus } from 'react-dom'
 import { toast } from 'react-hot-toast'
+import { sdk } from '@farcaster/miniapp-sdk'
 import {
   analyzeUserAction,
   type AnalyzeState,
@@ -126,6 +127,26 @@ export default function Analyzer() {
     }
   }, [playlistState])
 
+  const shareImage = async (imageUrl: string) => {
+    if (!imageUrl) return
+    try {
+      await sdk.actions.composeCast({
+        text: 'Mintable vibes from BasedCaster',
+        embeds: [imageUrl],
+      } as any)
+      toast.success('Opening Farcaster composer…')
+      return
+    } catch (err) {
+      // Fallback: copy the image URL/data to clipboard
+      try {
+        await navigator.clipboard.writeText(imageUrl)
+        toast.success('Copied image link')
+      } catch {
+        toast.error('Unable to share automatically')
+      }
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Card className="card border-indigo-100">
@@ -162,6 +183,11 @@ export default function Analyzer() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="generate">
+            {!state?.result ? (
+              <div className="glass rounded-xl p-3 text-white text-sm">
+                <span className="font-semibold">Step 1:</span> Generate your Based score to unlock emoji, image, memecoins, NFTs, and playlist.
+              </div>
+            ) : null}
             <Accordion type="multiple" className="space-y-3">
           <AccordionItem value="score" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
@@ -203,7 +229,7 @@ export default function Analyzer() {
 
           <AccordionItem value="emoji" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
-              Second: Personality emoji
+              Second: Personality emoji{!state?.result ? ' (locked)' : ''}
             </AccordionTrigger>
             <AccordionContent className="bg-white rounded-b-xl px-4 pb-4 border border-indigo-100 border-t-0 -mt-2">
               <div className="space-y-3">
@@ -233,7 +259,7 @@ export default function Analyzer() {
 
           <AccordionItem value="image" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
-              Third: NFT-style image
+              Third: NFT-style image{!state?.result ? ' (locked)' : ''}
             </AccordionTrigger>
             <AccordionContent className="bg-white rounded-b-xl px-4 pb-4 border border-indigo-100 border-t-0 -mt-2">
               <form action={imageAction} className="space-y-2">
@@ -249,8 +275,15 @@ export default function Analyzer() {
                 <div className="rounded-xl overflow-hidden border border-indigo-100 shadow-sm mt-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imageState.imageDataUrl} alt="NFT style poster" className="w-full h-auto" />
-                  <div className="p-3">
+                  <div className="p-3 flex items-center gap-2">
                     <SaveToGalleryButton imageDataUrl={imageState.imageDataUrl} username={(state?.username || username) || ''} />
+                    <Button
+                      type="button"
+                      onClick={() => shareImage(imageState.imageDataUrl!)}
+                      className="h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                    >
+                      Share to Farcaster
+                    </Button>
                   </div>
                 </div>
               ) : null}
@@ -268,7 +301,7 @@ export default function Analyzer() {
 
           <AccordionItem value="memecoins" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
-              Fourth: Memecoin suggestions
+              Fourth: Memecoin suggestions{!state?.result ? ' (locked)' : ''}
             </AccordionTrigger>
             <AccordionContent className="bg-white rounded-b-xl px-4 pb-4 border border-indigo-100 border-t-0 -mt-2">
               <form action={memecoinsAction} className="space-y-2">
@@ -299,7 +332,7 @@ export default function Analyzer() {
 
           <AccordionItem value="nfts" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
-              Fifth: NFT suggestions
+              Fifth: NFT suggestions{!state?.result ? ' (locked)' : ''}
             </AccordionTrigger>
             <AccordionContent className="bg-white rounded-b-xl px-4 pb-4 border border-indigo-100 border-t-0 -mt-2">
               <form action={nftsAction} className="space-y-2">
@@ -330,7 +363,7 @@ export default function Analyzer() {
 
           <AccordionItem value="playlist" className="border-none">
             <AccordionTrigger className="bg-white rounded-xl px-4 shadow-sm headline-3">
-              Sixth: Crypto playlist
+              Sixth: Crypto playlist{!state?.result ? ' (locked)' : ''}
             </AccordionTrigger>
             <AccordionContent className="bg-white rounded-b-xl px-4 pb-4 border border-indigo-100 border-t-0 -mt-2">
               <form action={playlistAction} className="space-y-2">
@@ -361,7 +394,7 @@ export default function Analyzer() {
         </Accordion>
           </TabsContent>
           <TabsContent value="gallery">
-            <Gallery />
+            <Gallery onShare={shareImage} />
           </TabsContent>
         </Tabs>
       </div>
@@ -388,7 +421,7 @@ export default function Analyzer() {
 
 type GalleryItem = { username: string; imageDataUrl: string; createdAt: number }
 
-function Gallery() {
+function Gallery({ onShare }: { onShare: (url: string) => void }) {
   const [items, setItems] = React.useState<GalleryItem[]>([])
 
   React.useEffect(() => {
@@ -408,12 +441,21 @@ function Gallery() {
 
   return (
     <div className="bg-white rounded-xl p-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {items.map((it, idx) => (
           <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
-            <div className="p-3 text-sm font-medium">@{it.username}</div>
+            <div className="p-2 flex items-center justify-between gap-2">
+              <span className="text-xs font-medium truncate">@{it.username}</span>
+              <button
+                type="button"
+                onClick={() => onShare(it.imageDataUrl)}
+                className="text-[11px] rounded-lg bg-indigo-600 text-white px-2 py-1 hover:bg-indigo-700"
+              >
+                Share
+              </button>
+            </div>
           </div>
         ))}
       </div>
