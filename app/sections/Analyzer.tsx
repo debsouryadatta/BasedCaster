@@ -147,6 +147,41 @@ export default function Analyzer() {
     }
   }
 
+  const downloadImage = async (imageUrl: string, uname: string) => {
+    if (!imageUrl) return
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      const loaded: HTMLImageElement = await new Promise((resolve, reject) => {
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = imageUrl
+      })
+
+      const width = (loaded.naturalWidth || loaded.width || 1024)
+      const height = (loaded.naturalHeight || loaded.height || 1024)
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Canvas not supported')
+      ctx.drawImage(loaded, 0, 0, width, height)
+
+      const jpegUrl = canvas.toDataURL('image/jpeg', 0.92)
+      const safeName = (uname || 'art').replace(/[^a-z0-9-_]/gi, '_').toLowerCase()
+      const filename = `basedcaster-${safeName}-${Date.now()}.jpg`
+      const a = document.createElement('a')
+      a.href = jpegUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      toast.success('Downloading image…')
+    } catch {
+      toast.error('Download failed')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <Card className="card border-indigo-100">
@@ -283,6 +318,13 @@ export default function Analyzer() {
                       className="h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
                     >
                       Share to Farcaster
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => downloadImage(imageState.imageDataUrl!, (state?.username || username) || '')}
+                      className="h-10 rounded-lg bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
+                    >
+                      Download
                     </Button>
                   </div>
                 </div>
