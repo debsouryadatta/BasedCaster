@@ -1,0 +1,25 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjExOTAwMzEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg0YmJENkNhRkM5MjliZTBiNTlDNWVEQWQ0MTIwODU1NUFFNTcwMjA3In0",
+    "payload": "eyJkb21haW4iOiJwb2xscy1uaWtoaWwudmVyY2VsLmFwcCJ9",
+    "signature": "MHgzMGNhZmJjNWFhMjU5YmYwNzZhMjIxNGJlNGRmMDg0MmIxMzQyZWNjYzEwMDZiYjJhMDhmMTg0NmY3ODk5ODg2MDU4NjQ1ZTI4MzZjNjU0ZTlkMjRlYjc2N2I4YTYwNTkyM2M3NGIxZThmYzkyYTY1OGQwZjFmMzYzNTgyYTk0OTFj"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Polls",
+    "iconUrl": "https://polls-nikhil.vercel.app/icon-1024.png",
+    "homeUrl": "https://polls-nikhil.vercel.app",
+    "splashImageUrl": "https://polls-nikhil.vercel.app/splash-200.png",
+    "splashBackgroundColor": "#0f0f23",
+    "subtitle": "Create and vote on polls",
+    "description": "Create and vote on polls",
+    "primaryCategory": "social",
+    "tags": ["polls", "voting", "survey", "community", "feedback"],
+    "screenshotUrls": [
+      "https://polls-nikhil.vercel.app/og.png"
+    ],
+    "heroImageUrl": "https://polls-nikhil.vercel.app/og.png",
+    "ogTitle": "Polls",
+    "ogDescription": "Create and vote on polls"
+  }
+}
