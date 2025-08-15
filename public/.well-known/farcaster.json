@@ -1,25 +1,23 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjExOTAwMzEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg0YmJENkNhRkM5MjliZTBiNTlDNWVEQWQ0MTIwODU1NUFFNTcwMjA3In0",
-    "payload": "eyJkb21haW4iOiJwb2xscy1uaWtoaWwudmVyY2VsLmFwcCJ9",
-    "signature": "MHgzMGNhZmJjNWFhMjU5YmYwNzZhMjIxNGJlNGRmMDg0MmIxMzQyZWNjYzEwMDZiYjJhMDhmMTg0NmY3ODk5ODg2MDU4NjQ1ZTI4MzZjNjU0ZTlkMjRlYjc2N2I4YTYwNTkyM2M3NGIxZThmYzkyYTY1OGQwZjFmMzYzNTgyYTk0OTFj"
+    "header": "eyJmaWQiOjExMzYxMjIsInR5cGUiOiJhdXRoIiwia2V5IjoiMHhCMzQwNGFiZGZiNDZlNGViODYzZjM1ZmY5YUVCNDc1QWNjMTA2NGJlIn0",
+    "payload": "eyJkb21haW4iOiJiYXNlZC1jYXN0ZXItdGVuLnZlcmNlbC5hcHAifQ",
+    "signature": "TntvyJxwtz1cWIWFHz1yutgoDqCRi+jDpAG3k7FUCSItCkGF0pbf1VVEadrUyzDIMVd8fTfSYWAmct8dmN5O7xs="
   },
   "miniapp": {
     "version": "1",
-    "name": "Polls",
-    "iconUrl": "https://polls-nikhil.vercel.app/icon-1024.png",
-    "homeUrl": "https://polls-nikhil.vercel.app",
-    "splashImageUrl": "https://polls-nikhil.vercel.app/splash-200.png",
-    "splashBackgroundColor": "#0f0f23",
-    "subtitle": "Create and vote on polls",
-    "description": "Create and vote on polls",
+    "name": "Based Caster",
+    "iconUrl": "https://based-caster-ten.vercel.app/icon-1024.png",
+    "homeUrl": "https://based-caster-ten.vercel.app",
+    "splashImageUrl": "https://based-caster-ten.vercel.app/splash-200.png",
+    "splashBackgroundColor": "#4F39F6",
+    "subtitle": "Based Caster",
+    "description": "Based Caster",
     "primaryCategory": "social",
-    "tags": ["polls", "voting", "survey", "community", "feedback"],
-    "screenshotUrls": [
-      "https://polls-nikhil.vercel.app/og.png"
-    ],
-    "heroImageUrl": "https://polls-nikhil.vercel.app/og.png",
-    "ogTitle": "Polls",
-    "ogDescription": "Create and vote on polls"
+    "tags": ["based", "caster", "based caster", "based caster app", "based caster app farcaster", "based caster app farcaster miniapp"],
+    "screenshotUrls": ["https://based-caster-ten.vercel.app/og.png"],
+    "heroImageUrl": "https://based-caster-ten.vercel.app/og.png",
+    "ogTitle": "Based Caster",
+    "ogDescription": "Based Caster"
   }
 }

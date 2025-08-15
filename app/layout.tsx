@@ -32,14 +32,14 @@ const spaceGrotesk = Space_Grotesk({
 
 const miniappEmbed = {
   version: "1",
-  imageUrl: `${PROD}/og.png`,
+  imageUrl: `${PROD}/icon-1024.png`,
   button: {
     title: "Open BasedCaster",
     action: {
       type: "launch_miniapp",
       name: "BasedCaster",
       url: PROD,
-      splashImageUrl: `${PROD}/splash-200.png`,
+      splashImageUrl: `${PROD}/icon-1024.png`,
       splashBackgroundColor: "#EEF2FF",
     },
   },
@@ -48,6 +48,23 @@ const miniappEmbed = {
 export const metadata: Metadata = {
   title: "BasedCaster",
   description: "Analyze Twitter vibes for Base/Farcaster culture and mint a personality card.",
+  openGraph: {
+    title: "BasedCaster",
+    description: "Analyze Twitter vibes for Base/Farcaster culture and mint a personality card.",
+    images: [
+      {
+        url: "/icon-1024.png",
+        width: 1024,
+        height: 1024,
+        alt: "BasedCaster",
+      },
+    ],
+  },
+  icons: [
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "icon", type: "image/png", sizes: "192x192", url: "/icon-1024.png" },
+    { rel: "apple-touch-icon", url: "/icon-1024.png" },
+  ],
   other: {
     "fc:miniapp": JSON.stringify(miniappEmbed),
   },
@@ -57,6 +74,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
       <link rel="icon" href="/favicon.ico" sizes="any" />
+      <link rel="apple-touch-icon" href="/icon-1024.png" />
+      <link rel="icon" type="image/png" sizes="192x192" href="/icon-1024.png" />
       <body className="min-h-dvh bg-background text-foreground pb-[env(safe-area-inset-bottom)]">
         <Providers>
           <HotToaster />
