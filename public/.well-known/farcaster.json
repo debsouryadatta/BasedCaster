@@ -19,5 +19,8 @@
     "heroImageUrl": "https://based-caster-ten.vercel.app/og.png",
     "ogTitle": "Based Caster",
     "ogDescription": "Based Caster"
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x9731e825160FD0EB49df1FA8DfAF40cfBcd7450D"]
   }
 }
