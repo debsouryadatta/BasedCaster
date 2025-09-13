@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 function Spinner({ className = '' }: { className?: string }) {
   return <span className={`inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className}`} />
@@ -610,9 +611,56 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
       ) : (
         <div className="grid grid-cols-3 gap-3">
           {items.map((it, idx) => (
-            <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white">
+            <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white relative group">
+              {/* Full screen expand button */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <button
+                    type="button"
+                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    title="View fullscreen"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-4-4m4 4v-4m0 4h-4" />
+                    </svg>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl w-[90vw] max-h-[90vh] p-0 bg-black border-0">
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.imageDataUrl}
+                      alt={it.username}
+                      className="max-w-full max-h-[90vh] object-contain"
+                    />
+                    <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-lg text-sm">
+                      @{it.username}
+                    </div>
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onShare(it.imageDataUrl)}
+                        className="bg-black/70 hover:bg-black/90 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Share
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(it.imageDataUrl, it.username)}
+                        className="bg-black/70 hover:bg-black/90 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Image */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
+
+              {/* Bottom controls */}
               <div className="p-2 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium truncate">@{it.username}</span>
