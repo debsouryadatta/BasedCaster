@@ -16,6 +16,8 @@ import {
   type NftsState,
   generatePlaylistAction,
   type PlaylistState,
+  uploadImageAction,
+  type UploadImageState,
 } from '@/app/actions/twitter'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -469,6 +471,11 @@ type GalleryItem = { username: string; imageDataUrl: string; createdAt: number }
 
 function Gallery({ onShare }: { onShare: (url: string) => void }) {
   const [items, setItems] = React.useState<GalleryItem[]>([])
+  const [uploadState, uploadAction] = useFormState<UploadImageState, FormData>(uploadImageAction, undefined as unknown as UploadImageState)
+  const [uploadUsername, setUploadUsername] = React.useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const uploadSeenRef = useRef<UploadImageState | undefined>(undefined)
 
   React.useEffect(() => {
     try {
@@ -477,34 +484,160 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
     } catch {}
   }, [])
 
-  if (!items || items.length === 0) {
-    return (
-      <div className="bg-white rounded-xl p-6 text-center text-sm text-muted-foreground">
-        Your saved posters will appear here. Generate an image and hit "Save to gallery".
-      </div>
-    )
+  React.useEffect(() => {
+    if (!uploadState || uploadSeenRef.current === uploadState) return
+    uploadSeenRef.current = uploadState
+    if (uploadState.ok) {
+      toast.success('Image uploaded to gallery')
+      setUploadUsername('')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      // Refresh gallery items
+      try {
+        const raw = localStorage.getItem('basedcaster.gallery')
+        if (raw) setItems(JSON.parse(raw))
+      } catch {}
+    } else if (!uploadState.ok && uploadState.error) {
+      toast.error(uploadState.error)
+    }
+  }, [uploadState])
+
+  const downloadImage = async (imageUrl: string, username: string) => {
+    if (!imageUrl) return
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      const loaded: HTMLImageElement = await new Promise((resolve, reject) => {
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = imageUrl
+      })
+
+      const width = (loaded.naturalWidth || loaded.width || 1024)
+      const height = (loaded.naturalHeight || loaded.height || 1024)
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('Canvas not supported')
+      ctx.drawImage(loaded, 0, 0, width, height)
+
+      const jpegUrl = canvas.toDataURL('image/jpeg', 0.92)
+      const safeName = (username || 'image').replace(/[^a-z0-9-_]/gi, '_').toLowerCase()
+      const filename = `basedcaster-${safeName}-${Date.now()}.jpg`
+      const a = document.createElement('a')
+      a.href = jpegUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      toast.success('Image downloaded')
+    } catch {
+      toast.error('Download failed')
+    }
+  }
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!uploadUsername.trim()) {
+      toast.error('Please enter a username first')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const imageDataUrl = e.target?.result as string
+      if (imageDataUrl) {
+        // Add to local storage immediately
+        try {
+          const raw = localStorage.getItem('basedcaster.gallery')
+          const list: GalleryItem[] = raw ? JSON.parse(raw) : []
+          const newItem: GalleryItem = {
+            username: uploadUsername.trim(),
+            imageDataUrl,
+            createdAt: Date.now()
+          }
+          const next: GalleryItem[] = [newItem, ...list].slice(0, 60)
+          localStorage.setItem('basedcaster.gallery', JSON.stringify(next))
+          setItems(next)
+          toast.success('Image added to gallery')
+          setUploadUsername('')
+          if (fileInputRef.current) fileInputRef.current.value = ''
+        } catch {
+          toast.error('Failed to save image')
+        }
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   return (
-    <div className="bg-white rounded-xl p-4">
-      <div className="grid grid-cols-3 gap-3">
-        {items.map((it, idx) => (
-          <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
-            <div className="p-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium truncate">@{it.username}</span>
-              <button
-                type="button"
-                onClick={() => onShare(it.imageDataUrl)}
-                className="text-[11px] rounded-lg bg-indigo-600 text-white px-2 py-1 hover:bg-indigo-700"
-              >
-                Share
-              </button>
-            </div>
+    <div className="bg-white rounded-xl p-4 space-y-4">
+      {/* Upload Section */}
+      <div className="border-b border-indigo-100 pb-4">
+        <h3 className="text-sm font-medium text-indigo-900 mb-3">Add Image to Gallery</h3>
+        <div className="space-y-3">
+          <div className="flex gap-2 items-center">
+            <span className="text-indigo-600 font-medium">@</span>
+            <Input
+              value={uploadUsername}
+              onChange={(e) => setUploadUsername(e.target.value)}
+              placeholder="username"
+              className="h-10 rounded-lg border-indigo-200 focus-visible:ring-indigo-500 flex-1"
+            />
           </div>
-        ))}
+          <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+          </div>
+          {uploadState && !uploadState.ok && uploadState.error && (
+            <p className="text-destructive text-xs">{uploadState.error}</p>
+          )}
+        </div>
       </div>
+
+      {/* Gallery Grid */}
+      {!items || items.length === 0 ? (
+        <div className="text-center text-sm text-muted-foreground py-6">
+          Your saved posters will appear here. Generate an image and hit "Save to gallery" or upload your own images above.
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-3">
+          {items.map((it, idx) => (
+            <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
+              <div className="p-2 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium truncate">@{it.username}</span>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onShare(it.imageDataUrl)}
+                    className="text-[10px] rounded-md bg-indigo-600 text-white px-2 py-1 hover:bg-indigo-700 flex-1"
+                  >
+                    Share
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadImage(it.imageDataUrl, it.username)}
+                    className="text-[10px] rounded-md bg-green-600 text-white px-2 py-1 hover:bg-green-700 flex-1"
+                  >
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

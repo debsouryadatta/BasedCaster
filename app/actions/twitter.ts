@@ -286,3 +286,37 @@ Focus on high-energy, futuristic, degen-friendly tracks. Include title and optio
   return { ok: true, items }
 }
 
+export type UploadImageState = { ok: boolean; error?: string }
+export async function uploadImageAction(_prev: UploadImageState | undefined, formData: FormData): Promise<UploadImageState> {
+  try {
+    const imageFile = formData.get('image') as File
+    const username = (formData.get('username') || '').toString().trim()
+
+    if (!imageFile) {
+      return { ok: false, error: 'Please select an image file.' }
+    }
+
+    if (!username) {
+      return { ok: false, error: 'Please enter a username.' }
+    }
+
+    if (imageFile.size > 5 * 1024 * 1024) {
+      return { ok: false, error: 'Image must be smaller than 5MB.' }
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(imageFile.type)) {
+      return { ok: false, error: 'Only JPEG, PNG, GIF, and WebP images are supported.' }
+    }
+
+    // Validate the file can be read
+    const arrayBuffer = await imageFile.arrayBuffer()
+    if (arrayBuffer.byteLength === 0) {
+      return { ok: false, error: 'Invalid image file.' }
+    }
+
+    return { ok: true }
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Failed to upload image.' }
+  }
+}
+
