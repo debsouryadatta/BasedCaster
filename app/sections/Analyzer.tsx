@@ -469,6 +469,7 @@ type GalleryItem = { username: string; imageDataUrl: string; createdAt: number }
 
 function Gallery({ onShare }: { onShare: (url: string) => void }) {
   const [items, setItems] = React.useState<GalleryItem[]>([])
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
     try {
@@ -477,19 +478,102 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
     } catch {}
   }, [])
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be smaller than 5MB')
+      return
+    }
+
+    try {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const imageDataUrl = event.target?.result as string
+        if (imageDataUrl) {
+          const raw = localStorage.getItem('basedcaster.gallery')
+          const list: GalleryItem[] = raw ? JSON.parse(raw) : []
+          const filename = file.name.split('.')[0].substring(0, 30)
+          const next: GalleryItem[] = [{ username: filename, imageDataUrl, createdAt: Date.now() }, ...list].slice(0, 60)
+          localStorage.setItem('basedcaster.gallery', JSON.stringify(next))
+          setItems(next)
+          toast.success('Image uploaded to gallery')
+        }
+      }
+      reader.onerror = () => {
+        toast.error('Failed to read image')
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      toast.error('Failed to upload image')
+    }
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const deleteItem = (idx: number) => {
+    const updated = items.filter((_, i) => i !== idx)
+    setItems(updated)
+    localStorage.setItem('basedcaster.gallery', JSON.stringify(updated))
+    toast.success('Image removed')
+  }
+
   if (!items || items.length === 0) {
     return (
-      <div className="bg-white rounded-xl p-6 text-center text-sm text-muted-foreground">
-        Your saved posters will appear here. Generate an image and hit "Save to gallery".
+      <div className="bg-white rounded-xl p-6 space-y-4">
+        <div className="text-center text-sm text-muted-foreground">
+          Your saved posters will appear here. Generate an image and hit "Save to gallery", or upload your own.
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm transition-colors"
+        >
+          + Upload Image
+        </button>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-xl p-4">
+    <div className="bg-white rounded-xl p-4 space-y-4">
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="w-full h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm transition-colors"
+        >
+          + Upload Image
+        </button>
+      </div>
       <div className="grid grid-cols-3 gap-3">
         {items.map((it, idx) => (
-          <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white">
+          <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white relative group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
             <div className="p-2 flex items-center justify-between gap-2">
@@ -502,6 +586,14 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
                 Share
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => deleteItem(idx)}
+              className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs hover:bg-red-600"
+              title="Delete image"
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>
