@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 
 function Spinner({ className = '' }: { className?: string }) {
   return <span className={`inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className}`} />
@@ -469,6 +470,7 @@ type GalleryItem = { username: string; imageDataUrl: string; createdAt: number }
 
 function Gallery({ onShare }: { onShare: (url: string) => void }) {
   const [items, setItems] = React.useState<GalleryItem[]>([])
+  const [selectedImageIdx, setSelectedImageIdx] = React.useState<number | null>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   React.useEffect(() => {
@@ -529,6 +531,8 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
     toast.success('Image removed')
   }
 
+  const selectedImage = selectedImageIdx !== null ? items[selectedImageIdx] : null
+
   if (!items || items.length === 0) {
     return (
       <div className="bg-white rounded-xl p-6 space-y-4">
@@ -554,50 +558,95 @@ function Gallery({ onShare }: { onShare: (url: string) => void }) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-4 space-y-4">
-      <div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm transition-colors"
-        >
-          + Upload Image
-        </button>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        {items.map((it, idx) => (
-          <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white relative group">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={it.imageDataUrl} alt={it.username} className="w-full h-auto" />
-            <div className="p-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium truncate">@{it.username}</span>
+    <>
+      <div className="bg-white rounded-xl p-4 space-y-4">
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full h-10 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm transition-colors"
+          >
+            + Upload Image
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {items.map((it, idx) => (
+            <div key={idx} className="rounded-xl overflow-hidden border border-indigo-100 bg-white relative group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={it.imageDataUrl} 
+                alt={it.username} 
+                className="w-full h-auto cursor-pointer hover:opacity-75 transition-opacity" 
+                onClick={() => setSelectedImageIdx(idx)}
+              />
+              <div className="p-2 flex items-center justify-between gap-2">
+                <span className="text-xs font-medium truncate">@{it.username}</span>
+                <button
+                  type="button"
+                  onClick={() => onShare(it.imageDataUrl)}
+                  className="text-[11px] rounded-lg bg-indigo-600 text-white px-2 py-1 hover:bg-indigo-700"
+                >
+                  Share
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => onShare(it.imageDataUrl)}
-                className="text-[11px] rounded-lg bg-indigo-600 text-white px-2 py-1 hover:bg-indigo-700"
+                onClick={() => deleteItem(idx)}
+                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs hover:bg-red-600"
+                title="Delete image"
               >
-                Share
+                ×
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => deleteItem(idx)}
-              className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs hover:bg-red-600"
-              title="Delete image"
-            >
-              ×
-            </button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+
+      <Dialog open={selectedImageIdx !== null} onOpenChange={(open) => !open && setSelectedImageIdx(null)}>
+        <DialogContent className="max-w-2xl border-indigo-200 bg-white p-4 sm:p-6">
+          {selectedImage && (
+            <div className="space-y-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={selectedImage.imageDataUrl} alt={selectedImage.username} className="w-full h-auto rounded-lg" />
+              <div className="flex flex-col gap-2">
+                <div className="text-sm font-medium text-indigo-700">@{selectedImage.username}</div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onShare(selectedImage.imageDataUrl)}
+                    className="flex-1 h-9 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-medium text-sm transition-colors"
+                  >
+                    Share to Farcaster
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const a = document.createElement('a')
+                      a.href = selectedImage.imageDataUrl
+                      a.download = `basedcaster-${selectedImage.username}-${Date.now()}.png`
+                      document.body.appendChild(a)
+                      a.click()
+                      a.remove()
+                      toast.success('Downloading image…')
+                    }}
+                    className="flex-1 h-9 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-medium text-sm transition-colors"
+                  >
+                    Download
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
