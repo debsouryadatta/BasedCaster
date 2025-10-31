@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <link rel="icon" href="/favicon.ico" sizes="any" />
       <link rel="apple-touch-icon" href="/icon-1024.png" />
       <link rel="icon" type="image/png" sizes="192x192" href="/icon-1024.png" />
-      <body className="min-h-dvh bg-background text-foreground pb-[env(safe-area-inset-bottom)]">
+      <body className="min-h-dvh bg-indigo-600 text-foreground pb-[env(safe-area-inset-bottom)]">
         <Providers>
           <HotToaster />
           <MiniAppReady />
